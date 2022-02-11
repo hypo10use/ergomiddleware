@@ -5,7 +5,6 @@ app = Flask(__name__)
 
 
 @app.route('/ergoscript', methods = ['POST'])
-@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def compile_ergoscript():
     headers = {'content-type': 'application/json'}
     json_data = request.json
