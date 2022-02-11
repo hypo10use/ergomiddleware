@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request
-import requests, json
+import requests, json, flask_cors
 
 app = Flask(__name__)
 
 
 @app.route('/ergoscript', methods = ['POST'])
+@cross_origin()
 def compile_ergoscript():
     headers = {'content-type': 'application/json'}
     json_data = request.json
