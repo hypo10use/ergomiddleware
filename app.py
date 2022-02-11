@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request
-import requests
+import requests, json
 
 app = Flask(__name__)
 
 
 @app.route('/ergoscript', methods = ['GET'])
 def compile_ergoscript():
-    r=requests.post("http://116.203.30.147:9053/", data={'source': request.data})
+    headers = {'content-type': 'application/json'}
+    r=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': request.data}), headers=headers)
     return r.text
 
 
