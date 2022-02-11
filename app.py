@@ -1,13 +1,13 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import requests
 
 app = Flask(__name__)
 
 
-@app.route('/')
-def index():
-    r=requests.post("http://116.203.30.147:9053/", data={'key': 'value'})
-    return render_template('index.html')
+@app.route('/ergoscript', methods = ['GET'])
+def compile_ergoscript():
+    r=requests.post("http://116.203.30.147:9053/", data={'source': request.data})
+    return r.text
 
 
 
