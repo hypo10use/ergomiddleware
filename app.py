@@ -63,7 +63,8 @@ def create_round():
     ticketScript = ticketScript.replace("ticketPrice", ticketPrice)
     ticketScript = ticketScript.replace("winnerScriptHash", str(winnerScriptHash.content))
     ticketContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': ticketScript.replace('|', '')}), headers=headers).json()
-    ticketErgoTree=requests.get("http://116.203.30.147:9053/script/addressToTree/" + ticketContract["error"])
+    return ticketContract
+    ticketErgoTree=requests.get("http://116.203.30.147:9053/script/addressToTree/" + ticketContract["address"])
     ticketScriptHash = requests.post("http://116.203.30.147:9053/utils/hash/blake2b", data=ticketErgoTree, headers=headers)
 
     scriptTokenRepo = '''{
