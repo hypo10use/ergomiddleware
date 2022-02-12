@@ -19,7 +19,7 @@ def compile_ergoscript():
 def create_round():
     headers = {'content-type': 'application/json'}
     json_data = request.json
-    deadline = 684794#json_data['deadline']
+    deadline = "684794"#json_data['deadline']
     servicePubKey="9fm2q6fv6nyQxPpkd6n111xjt9hGdeMCmTM74W5VfyDZ81EuKmf"
     minFee = 1000000
     minToRaise = 5000000
