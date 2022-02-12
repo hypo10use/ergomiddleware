@@ -19,7 +19,7 @@ def compile_ergoscript():
 def create_round():
     headers = {'content-type': 'application/json'}
     json_data = request.json
-    deadline = json_data['deadline']
+    #deadline = json_data['deadline']
     servicePubKey="9fm2q6fv6nyQxPpkd6n111xjt9hGdeMCmTM74W5VfyDZ81EuKmf"
     minFee = 1000000
     minToRaise = 5000000
@@ -44,7 +44,9 @@ def create_round():
          |  sigmaProp((receiverCheck && refundPhaseSpend) || (receiverCheckWinner && winnerPhaseSpend))
          |}'''
 
-    winnerContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': winnerScript}), headers=headers)
+    winnerContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': winnerScript.replace('|', '')}), headers=headers)["address"]
+    winnerErgoTree=requests.get("http://116.203.30.147:9053/script/addressToTree/" + winnerContract)
+    winnerScriptHash = ticketContract=requests.post("http://116.203.30.147:9053/utils/hash/blake2b", data=winnerErgoTree, headers=headers)
 
     ticketScript = '''{
              |  val refundPhaseSpend = HEIGHT > deadlineHeight &&
@@ -69,7 +71,8 @@ def create_round():
     ticketScript = ticketScript.replace("ticketPrice", ticketPrice)
     ticketScript = ticketScript.replace("winnerScriptHash", winnerScriptHash)
     ticketContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': ticketScript}), headers=headers)
-
+    ticketErgoTree=requests.get("http://116.203.30.147:9053/script/addressToTree/" + ticketContract)
+    ticketScriptHash = requests.post("http://116.203.30.147:9053/utils/hash/blake2b", data=ticketErgoTree, headers=headers)
 
     scriptTokenRepo = '''{
          |  val totalSoldTicket = SELF.R4[Long].get
