@@ -38,7 +38,7 @@ def create_round():
 
     winnerContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': winnerScript.replace('|', '').replace("\t", "")}), headers=headers).json()
     winnerErgoTree=requests.get("http://116.203.30.147:9053/script/addressToTree/" + winnerContract["address"]).text
-    winnerScriptHash = requests.post("http://116.203.30.147:9053/utils/hash/blake2b", data=winnerErgoTree, headers=headers)
+    winnerScriptHash = requests.post("http://116.203.30.147:9053/utils/hash/blake2b", data=json.dumps(winnerErgoTree), headers=headers)
     return winnerScriptHash.content
     ticketScript = '''{
              |  val refundPhaseSpend = HEIGHT > deadlineHeight &&
