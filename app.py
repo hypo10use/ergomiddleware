@@ -46,7 +46,7 @@ def create_round():
 
     winnerContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': winnerScript.replace('|', '')}), headers=headers).json()
     print(winnerContract)
-    winnerErgoTree=requests.get("http://116.203.30.147:9053/script/addressToTree/" + winnerContract)
+    winnerErgoTree=requests.get("http://116.203.30.147:9053/script/addressToTree/" + winnerContract["error"])
     winnerScriptHash = ticketContract=requests.post("http://116.203.30.147:9053/utils/hash/blake2b", data=winnerErgoTree, headers=headers)
 
     ticketScript = '''{
