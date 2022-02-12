@@ -21,9 +21,9 @@ def create_round():
     json_data = request.json
     deadline = "684794"#json_data['deadline']
     servicePubKey="9fm2q6fv6nyQxPpkd6n111xjt9hGdeMCmTM74W5VfyDZ81EuKmf"
-    minFee = 1000000
-    minToRaise = 5000000
-    ticketPrice = 2000000
+    minFee = "1000000"
+    minToRaise = "5000000"
+    ticketPrice = "2000000"
     
     winnerScript = '''{
              |  sigmaProp(
