@@ -15,7 +15,7 @@ def compile_ergoscript():
     r=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': script}), headers=headers)
     return r.text
 
-@app.route('/create_round', methods = ['POST'])
+@app.route('/create_round', methods = ['POST', 'GET'])
 def create_round():
     headers = {'content-type': 'application/json'}
     json_data = request.json
