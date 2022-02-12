@@ -19,13 +19,63 @@ def compile_ergoscript():
 def create_round():
     headers = {'content-type': 'application/json'}
     json_data = request.json
-    script = json_data['script']
-    script = '''{
+    deadline = json_data['deadline']
+    servicePubKey="9fm2q6fv6nyQxPpkd6n111xjt9hGdeMCmTM74W5VfyDZ81EuKmf"
+    minFee = 1000000
+    minToRaise = 5000000
+    ticketPrice = 2000000
+    
+    winnerScript = '''{
+         |  val refundPhaseSpend = HEIGHT > deadlineHeight &&
+         |                         blake2b256(INPUTS(0).propositionBytes) == SELF.R6[Coll[Byte]].get &&
+         |                         INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
+         |
+         |  val winnerPhaseSpend = HEIGHT > deadlineHeight &&
+         |                         blake2b256(INPUTS(0).propositionBytes) == winnerScriptHash &&
+         |                         INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
+         |
+         |  val receiverCheck = OUTPUTS(1).propositionBytes  == SELF.R7[Coll[Byte]].get &&
+         |                      OUTPUTS(1).value == SELF.tokens(0)._2 * ticketPrice &&
+         |                      INPUTS.size == 2
+         |
+         |  val receiverCheckWinner = OUTPUTS(0).propositionBytes == SELF.R7[Coll[Byte]].get &&
+         |                            OUTPUTS(0).value == INPUTS(0).value
+         |
+         |  sigmaProp((receiverCheck && refundPhaseSpend) || (receiverCheckWinner && winnerPhaseSpend))
+         |}'''
+
+    winnerContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': winnerScript}), headers=headers)
+
+    ticketScript = '''{
+             |  val refundPhaseSpend = HEIGHT > deadlineHeight &&
+             |												 blake2b256(INPUTS(0).propositionBytes) == SELF.R6[Coll[Byte]].get &&
+             |												 INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
+             |
+             |	val winnerPhaseSpend = HEIGHT > deadlineHeight &&
+             |												 blake2b256(INPUTS(0).propositionBytes) == winnerScriptHash &&
+             |												 INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
+             |
+             |	val receiverCheck = OUTPUTS(1).propositionBytes	== SELF.R7[Coll[Byte]].get &&
+             |											OUTPUTS(1).value == SELF.tokens(0)._2 * ticketPrice &&
+             |											INPUTS.size == 2
+             |
+             |  val receiverCheckWinner = OUTPUTS(0).propositionBytes == SELF.R7[Coll[Byte]].get &&
+             |											      OUTPUTS(0).value == INPUTS(0).value
+             |
+             |	sigmaProp((receiverCheck && refundPhaseSpend) || (receiverCheckWinner && winnerPhaseSpend))
+             |}'''
+
+    ticketScript = ticketScript.replace("deadlineHeight", deadline)
+    ticketScript = ticketScript.replace("ticketPrice", ticketPrice)
+    ticketScript = ticketScript.replace("winnerScriptHash", winnerScriptHash)
+    ticketContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': ticketScript}), headers=headers)
+
+
+    scriptTokenRepo = '''{
          |  val totalSoldTicket = SELF.R4[Long].get
          |  val totalSoldTicketBI: BigInt = totalSoldTicket.toBigInt
          |  val totalRaised = totalSoldTicket * ticketPrice
-         |  val projectCoef = SELF.R6[Long].get
-         |  val winnerCoef = 100L - projectCoef
+         |  val winnerCoef = 100L - 10L
          |  sigmaProp(
          |    if (HEIGHT < deadlineHeight) {
          |      allOf(Coll(
@@ -49,7 +99,7 @@ def create_round():
          |            OUTPUTS(0).value == SELF.value + INPUTS(1).value - 2 * minFee,
          |            OUTPUTS(1).value == minFee,
          |            // same Coef
-         |            OUTPUTS(0).R6[Long].get == projectCoef
+         |            OUTPUTS(0).R6[Long].get == 10L
          |            ))
          |    }
          |    else {
@@ -62,7 +112,7 @@ def create_round():
          |              OUTPUTS(0).tokens(0)._2 == 1,
          |              OUTPUTS(0).propositionBytes == servicePubKey.propBytes,
          |              // Project Box
-         |              OUTPUTS(1).value >= totalRaised * projectCoef / 100,
+         |              OUTPUTS(1).value >= totalRaised * 10L / 100,
          |              OUTPUTS(1).propositionBytes == servicePubKey.propBytes,
          |              // Winner Box
          |              OUTPUTS(2).value  >= totalRaised * winnerCoef / 100,
@@ -101,7 +151,17 @@ def create_round():
          |    }
          |  })
          |}'''
-    r=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': script}), headers=headers)
+    scriptTokenRepo = scriptTokenRepo.replace("deadlineHeight", deadline)
+    scriptTokenRepo = scriptTokenRepo.replace("minFee", minFee)
+    scriptTokenRepo = scriptTokenRepo.replace("ticketScriptHash", ticketScriptHash)
+    scriptTokenRepo = scriptTokenRepo.replace("winnerScriptHash", winnerScriptHash)
+    scriptTokenRepo = scriptTokenRepo.replace("servicePubKey", servicePubKey)
+    scriptTokenRepo = scriptTokenRepo.replace("minToRaise", minToRaise)
+    scriptTokenRepo = scriptTokenRepo.replace("ticketPrice", ticketPrice)
+
+    boxContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': scriptTokenRepo}), headers=headers)
+
+
     return r.text
 
 
@@ -109,24 +169,7 @@ def ticket():
     headers = {'content-type': 'application/json'}
     json_data = request.json
     script = json_data['script']
-    script = '''{
-         |  val refundPhaseSpend = HEIGHT > deadlineHeight &&
-         |                         blake2b256(INPUTS(0).propositionBytes) == SELF.R6[Coll[Byte]].get &&
-         |                         INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
-         |
-         |  val winnerPhaseSpend = HEIGHT > deadlineHeight &&
-         |                         blake2b256(INPUTS(0).propositionBytes) == winnerScriptHash &&
-         |                         INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
-         |
-         |  val receiverCheck = OUTPUTS(1).propositionBytes  == SELF.R7[Coll[Byte]].get &&
-         |                      OUTPUTS(1).value == SELF.tokens(0)._2 * ticketPrice &&
-         |                      INPUTS.size == 2
-         |
-         |  val receiverCheckWinner = OUTPUTS(0).propositionBytes == SELF.R7[Coll[Byte]].get &&
-         |                            OUTPUTS(0).value == INPUTS(0).value
-         |
-         |  sigmaProp((receiverCheck && refundPhaseSpend) || (receiverCheckWinner && winnerPhaseSpend))
-         |}'''
+
     r=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': script}), headers=headers)
     return r.text
 
