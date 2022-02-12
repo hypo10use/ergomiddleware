@@ -149,8 +149,8 @@ def create_round():
          |}'''
     scriptTokenRepo = scriptTokenRepo.replace("deadlineHeight", deadline)
     scriptTokenRepo = scriptTokenRepo.replace("minFee", minFee)
-    scriptTokenRepo = scriptTokenRepo.replace("ticketScriptHash", ticketScriptHash)
-    scriptTokenRepo = scriptTokenRepo.replace("winnerScriptHash", winnerScriptHash)
+    scriptTokenRepo = scriptTokenRepo.replace("ticketScriptHash", str(ticketScriptHash.content))
+    scriptTokenRepo = scriptTokenRepo.replace("winnerScriptHash", str(winnerScriptHash.content))
     scriptTokenRepo = scriptTokenRepo.replace("servicePubKey", servicePubKey)
     scriptTokenRepo = scriptTokenRepo.replace("minToRaise", minToRaise)
     scriptTokenRepo = scriptTokenRepo.replace("ticketPrice", ticketPrice)
