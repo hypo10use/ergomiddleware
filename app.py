@@ -26,23 +26,15 @@ def create_round():
     ticketPrice = 2000000
     
     winnerScript = '''{
-         |  val refundPhaseSpend = HEIGHT > deadlineHeight &&
-         |                         blake2b256(INPUTS(0).propositionBytes) == SELF.R6[Coll[Byte]].get &&
-         |                         INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
-         |
-         |  val winnerPhaseSpend = HEIGHT > deadlineHeight &&
-         |                         blake2b256(INPUTS(0).propositionBytes) == winnerScriptHash &&
-         |                         INPUTS(0).tokens(0)._1 == SELF.tokens(0)._1
-         |
-         |  val receiverCheck = OUTPUTS(1).propositionBytes  == SELF.R7[Coll[Byte]].get &&
-         |                      OUTPUTS(1).value == SELF.tokens(0)._2 * ticketPrice &&
-         |                      INPUTS.size == 2
-         |
-         |  val receiverCheckWinner = OUTPUTS(0).propositionBytes == SELF.R7[Coll[Byte]].get &&
-         |                            OUTPUTS(0).value == INPUTS(0).value
-         |
-         |  sigmaProp((receiverCheck && refundPhaseSpend) || (receiverCheckWinner && winnerPhaseSpend))
-         |}'''
+             |  sigmaProp(
+             |		allOf(Coll(
+             |					// Valid Ticket
+             |					INPUTS(1).tokens(0)._1 == SELF.tokens(0)._1,
+             |					INPUTS(1).R4[Long].get <= SELF.R4[Long].get,
+             |					INPUTS(1).R4[Long].get + INPUTS(1).R5[Long].get > SELF.R4[Long].get
+             |		))
+             |	)
+             |}'''
 
     winnerContract=requests.post("http://116.203.30.147:9053/script/p2sAddress", data=json.dumps({'source': winnerScript.replace('|', '')}), headers=headers).json()
     print(winnerContract)
